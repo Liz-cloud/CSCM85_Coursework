@@ -15,16 +15,27 @@ Consider the following statements about trace equivalence(=T) and bisimilarity(â
 Consider the following definition of a robot that can repeatedly report its positions, move to the left or right(within a given finite range), or do some work.
 
 `min=0 max=5 `
+
 `Range={min..max}`
+
 `datatypeDirection=L|R `
+
 `channelmove: Direction `
+
 `channel position: Range `
+
 `channel work` 
+
 `inc(x)=if x<max then x+1 else x `
+
 `dec(x)= if x>min then x-1 else x `
+
 `Robot(x)=position.x->Robot(x)[]`
+
 `  move.L->Robot(dec(x))[] `
+
 `  move.R->Robot(inc(x))[]`
+
 `  work->Robot(x) `
   
 Suppose doing work empties the robotâ€™s battery so that it needs at least two movements to recharge the battery. We assume that, initially, the robot starts at position 0 and its battery is empty. Define a process Battery(n), with an integer parameter n and a suitable synchronisation set X such that the process Robot(0) [|X|] Battery(0) models this behaviour
