@@ -1,0 +1,127 @@
+
+
+
+
+
+
+
+
+-- Question 2
+
+channel a, d , e , f , g
+
+-- Other example
+
+-- (1) (a -> P) ||| (a->Q) =_T a-> (P|||Q)
+-- (2) (a -> P) ||| (a->Q) ~ a-> (P|||Q)
+
+-- (1)
+-- LHS 
+--		(a -> P) ||| (a -> Q) -a->
+
+--P = STOP
+--Q = STOP
+
+--S = (a -> P) ||| (a -> Q)
+
+--S' = a -> (P ||| Q)
+
+
+
+
+
+--P = d -> e -> P
+--Q = f -> g -> Q
+
+P = d -> STOP
+Q = e -> STOP
+
+S = (a -> P) [] (a -> Q)
+S' = a -> (P [] Q)
+assert S [T= S'
+assert S' [T= S
+
+
+P' = STOP
+Q' = STOP
+T = (a -> P') [] (a -> Q')
+T' = a -> (P' [] Q')
+
+assert T [T= T'
+assert T' [T= T
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Question 3
+
+min = 0
+max = 5 
+
+Range = {min..max}
+
+datatype Direction = L | R 
+
+channel move : Direction
+channel position : Range
+channel work
+
+inc(x) = if x < max then x+1 else x
+dec(x) = if x > min then x-1 else x
+
+Robot(x) = position.x -> Robot(x) []
+move.L -> Robot(dec(x))[]
+move.R -> Robot(inc(x))[]
+work -> Robot(x)
+
+x = {| move |}
+y = {| move , work|}
+
+Control(x) = (if x == min then STOP else move.L -> Control(x-1)) 
+			[] 
+			(if x == max then STOP else move.R -> Control(x+1))
+
+-- Uses the control system so the robot cannot move.L if in position min and cannot Move.R if in position max.
+
+SystemC = Robot(min) [| x |] Control(min)
+
+
+-- Battery does not force the robot to do work. If the battery is full the robot can move around freely
+-- and do work at any time. Once work is done the robot must move 2 positions to do work again.
+
+Battery(n) = (if n==2 then work -> Battery(n-2) else move?b -> Battery(n+1)) 
+			 [] (n==2 & move?b -> Battery(n))
+
+
+SystemB = Robot(min) [| y |] Battery(0)
+SystemCB = SystemC [| y |] Battery(0)
+
+
+-- Should be no deadlocks
+assert SystemCB:[deadlock free]
+
+
+
+--  BatteryF Forces the robot to do work. If the battery is full then the robot has no choice but to do work.
+
+BatteryF(n) = if n==2 then work -> BatteryF(n-2) else move?b -> BatteryF(n+1)
+
+SystemBF = Robot(min) [| y |] BatteryF(0)
+SystemCBF = SystemC [| y |] BatteryF(0)
+
+
+
